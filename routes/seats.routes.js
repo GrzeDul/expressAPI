@@ -20,8 +20,15 @@ router.route('/seats').post((req, res) => {
   const { day, seat, client, email } = req.body;
 
   if (day && seat && client && email) {
-    db.seats.push({ id: uuidv4(), day, seat, client, email });
-    res.json({ message: 'OK' });
+    const isTaken = db.seats.some(
+      (seatData) => seatData.day === day && seatData.seat === seat
+    );
+    if (!isTaken) {
+      db.seats.push({ id: uuidv4(), day, seat, client, email });
+      res.json({ message: 'OK' });
+    } else {
+      res.status(406).json({ message: 'The slot is already taken...' });
+    }
   } else {
     res.status(400).json({ message: 'Not enough data...' });
   }
