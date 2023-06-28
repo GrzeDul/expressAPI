@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { io } from 'socket.io-client';
 import { Button, Progress, Alert } from 'reactstrap';
 import {
   getSeats,
-  loadSeatsRequest,
   getRequests,
+  loadSeats,
+  loadSeatsRequest,
 } from '../../../redux/seatsRedux';
 import './SeatChooser.scss';
 
@@ -12,29 +14,18 @@ const SeatChooser = ({ chosenDay, chosenSeat, updateSeat }) => {
   const dispatch = useDispatch();
   const seats = useSelector(getSeats);
   const requests = useSelector(getRequests);
-  const [intervalID, setIntervalID] = useState(null);
-
-  const intervalUpdateTime = 120000;
-
-  useEffect(() => {
-    setIntervalID(
-      setInterval(() => {
-        dispatch(loadSeatsRequest());
-      }, intervalUpdateTime)
-    );
-  }, []);
+  const allSeats = 50;
+  let taken = 0;
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    return () => {
-      if (intervalID) {
-        clearInterval(intervalID);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
+    const socketInit = io();
+    setSocket(socketInit);
+    socketInit.on('seatsUpdated', (seatsData) => {
+      dispatch(loadSeats(seatsData));
+    });
     dispatch(loadSeatsRequest());
-  }, [dispatch]);
+  }, []);
 
   const isTaken = (seatId) => {
     return seats.some((item) => item.seat === seatId && item.day === chosenDay);
@@ -78,7 +69,13 @@ const SeatChooser = ({ chosenDay, chosenSeat, updateSeat }) => {
       </small>
       {requests['LOAD_SEATS'] && requests['LOAD_SEATS'].success && (
         <div className='seats'>
-          {[...Array(50)].map((x, i) => prepareSeat(i + 1))}
+          {[...Array(allSeats)].map((x, i) => {
+            if (prepareSeat(i + 1).props.color === 'secondary') taken += 1;
+            return prepareSeat(i + 1);
+          })}
+          <p>
+            Free seats: {allSeats - taken}/{allSeats}
+          </p>
         </div>
       )}
       {requests['LOAD_SEATS'] && requests['LOAD_SEATS'].pending && (
