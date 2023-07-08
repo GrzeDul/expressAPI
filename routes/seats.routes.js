@@ -1,62 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./../db');
-const { v4: uuidv4 } = require('uuid');
+const SeatController = require('../controllers/seats.controller');
 
-router.route('/seats').get((req, res) => {
-  res.json(db.seats);
-});
+router.route('/seats').get(SeatController.getAll);
 
-router.route('/seats/:id').get((req, res) => {
-  const seatData = db.seats.find((s) => `${s.id}` === req.params.id);
-  if (seatData) {
-    res.json(seatData);
-  } else {
-    res.status(404).json({ message: 'Not found...' });
-  }
-});
+router.route('/seats/:id').get(SeatController.getById);
 
-router.route('/seats').post((req, res) => {
-  const { day, seat, client, email } = req.body;
+router.route('/seats').post(SeatController.post);
 
-  if (day && seat && client && email) {
-    const isTaken = db.seats.some(
-      (seatData) => seatData.day === day && seatData.seat === seat
-    );
-    if (!isTaken) {
-      db.seats.push({ id: uuidv4(), day, seat, client, email });
-      req.io.emit('seatsUpdated', db.seats);
-      res.json({ message: 'OK' });
-    } else {
-      res.status(406).json({ message: 'The slot is already taken...' });
-    }
-  } else {
-    res.status(400).json({ message: 'Not enough data...' });
-  }
-});
+router.route('/seats/:id').put(SeatController.update);
 
-router.route('/seats/:id').put((req, res) => {
-  let index;
-  const seatData = db.seats.find((s, i) => {
-    index = i;
-    return `${s.id}` === req.params.id;
-  });
-  if (!seatData) res.status(404).json({ message: 'Not found...' });
-  if (Object.keys(req.body).length != 0) {
-    db.seats[index] = { ...seatData, ...req.body };
-    res.json({ message: 'OK' });
-  } else {
-    res.status(400).json({ message: 'Nothing to change' });
-  }
-});
+router.route('/seats/:id').delete(SeatController.delete);
 
-router.route('/seats/:id').delete((req, res) => {
-  const seatData = db.seats.find((s) => `${s.id}` === req.params.id);
-  if (seatData) {
-    db.seats.splice(db.seats.indexOf(seatData), 1);
-    res.json({ message: 'OK' });
-  } else {
-    res.status(404).json({ message: 'Not found...' });
-  }
-});
 module.exports = router;
