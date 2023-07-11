@@ -20,9 +20,19 @@ exports.getById = async (req, res) => {
 
 exports.post = async (req, res) => {
   try {
-    const newSeat = new Seat(req.body);
-    await newSeat.save();
-    res.json(newSeat);
+    const isTaken = await Seat.findOne({
+      day: req.body.day,
+      seat: req.body.seat,
+    });
+
+    if (!isTaken) {
+      const newSeat = new Seat(req.body);
+      await newSeat.save();
+      req.io.emit('seatsUpdated', await Seat.find());
+      res.json(newSeat);
+    } else {
+      res.status(409).json({ message: 'Seat taken, Please select another' });
+    }
   } catch (err) {
     res.status(500).json({ message: err });
   }

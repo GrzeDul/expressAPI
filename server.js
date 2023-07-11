@@ -6,6 +6,9 @@ const path = require('path');
 const socket = require('socket.io');
 const mongoose = require('mongoose');
 
+const uri =
+  'mongodb+srv://grzestamail:nvBUq7YxY3RQV7Lw@cluster0.socpazp.mongodb.net/NewWaveDB?retryWrites=true&w=majority';
+
 const app = express();
 
 app.use(express.urlencoded({ extended: false }));
@@ -17,8 +20,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use('/api', testimonialsRoutes);
-// app.use('/api', seatsRoutes);
+app.use('/api', testimonialsRoutes);
+app.use('/api', seatsRoutes);
 app.use('/api', concertsRoutes);
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '/client/build/index.html'));
@@ -29,7 +32,7 @@ app.use((req, res) => {
 });
 
 // connects our backend code with the database
-mongoose.connect('mongodb://localhost:27017/NewWaveDB', {
+mongoose.connect(uri, {
   useNewUrlParser: true,
 });
 const db = mongoose.connection;
