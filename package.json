@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "set NODE_ENV=test&& mocha \"./{,!(node_modules|client)/**/}*.test.js\"",
+    "test": "cross-env NODE_ENV=test&& mocha \"./{,!(node_modules|client)/**/}*.test.js\"",
     "test:watch": "onchange \"./**/*.js\" -i -k -- npm run test",
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "start:prod": "cross-env NODE_ENV=production node server.js"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +22,9 @@
     "mongoose": "^5.7.1",
     "onchange": "^6.1.0",
     "socket.io": "^4.7.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "cross-env": "^7.0.3",
   }
 }
+
+
