@@ -32,8 +32,16 @@ app.use((req, res) => {
 });
 
 // connects our backend code with the database
-mongoose.connect(uri, {
+const NODE_ENV = process.env.NODE_ENV;
+let dbUri = uri;
+
+if (NODE_ENV === 'production') dbUri = uri;
+else if (NODE_ENV === 'test') dbUri = 'mongodb://localhost:27017/NewWaveDBtest';
+else dbUri = 'mongodb://localhost:27017/NewWaveDB';
+
+mongoose.connect(dbUri, {
   useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 const db = mongoose.connection;
 
@@ -51,3 +59,5 @@ const io = socket(server);
 io.on('connection', (socket) => {
   console.log('New socket!');
 });
+
+module.exports = server;
