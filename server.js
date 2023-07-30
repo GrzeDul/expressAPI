@@ -5,6 +5,7 @@ const concertsRoutes = require('./routes/concerts.routes');
 const path = require('path');
 const socket = require('socket.io');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 
 const uri =
   'mongodb+srv://grzestamail:nvBUq7YxY3RQV7Lw@cluster0.socpazp.mongodb.net/NewWaveDB?retryWrites=true&w=majority';
@@ -12,6 +13,7 @@ const uri =
 const app = express();
 
 app.use(express.urlencoded({ extended: false }));
+app.use(helmet());
 app.use(express.json());
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '/client/build')));
